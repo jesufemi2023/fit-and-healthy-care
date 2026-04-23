@@ -15,7 +15,7 @@ const getEnv = (key: string, fallback: string) => {
 
 export const CONFIG = {
   company: {
-    name: getEnv('VITE_COMPANY_NAME', "SD GHT HEALTH CARE"),
+    name: getEnv('VITE_COMPANY_NAME', "Fit and Healthy Care"),
     subtitle: getEnv('VITE_COMPANY_SUBTITLE', "NIGERIA LTD"),
     phone: getEnv('VITE_CONTACT_PHONE', "+234 (0) 123 456 789"),
     logoUrl: getEnv('VITE_LOGO_URL', ""),
@@ -27,7 +27,7 @@ export const CONFIG = {
   },
   whatsapp: {
     number: getEnv('VITE_WHATSAPP_NUMBER', "2347060734773"),
-    defaultMessage: getEnv('VITE_WHATSAPP_DEFAULT_MESSAGE', "Hello SD GHT Health Care, I would like to make an inquiry.")
+    defaultMessage: getEnv('VITE_WHATSAPP_DEFAULT_MESSAGE', "Hello Fit and Healthy Care, I would like to make an inquiry.")
   },
   defaults: {
     distributorId: getEnv('VITE_DEFAULT_DISTRIBUTOR_ID', "SD-GHT-MEMBER-001"),

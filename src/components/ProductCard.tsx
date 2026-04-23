@@ -36,19 +36,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, 
         />
         
         {/* Logo Overlay - Top Left - Increased Size */}
-        <div className="absolute top-2 left-2 md:top-3 md:left-3 z-10">
+        <div className="absolute top-2 left-2 md:top-3 md:left-3 z-10 flex flex-col items-center">
           {CONFIG.company.logoUrl ? (
             <img 
               src={CONFIG.company.logoUrl} 
               alt="Logo" 
-              className="h-8 md:h-12 w-auto object-contain drop-shadow-md"
+              className="h-6 md:h-10 w-auto object-contain drop-shadow-md"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-md">
-              <Activity size={18} className="md:size-6" />
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-md">
+              <Activity size={14} className="md:size-5" />
             </div>
           )}
+          <span className="text-[6px] md:text-[8px] font-black text-slate-800 tracking-tighter bg-white/60 backdrop-blur-[2px] px-1 rounded mt-0.5">
+            {CONFIG.company.name}
+          </span>
         </div>
 
         {/* Quality Stamp - Bottom Right Overlay */}

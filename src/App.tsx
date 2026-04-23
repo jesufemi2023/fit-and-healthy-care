@@ -459,23 +459,23 @@ export default function App() {
         {/* Header */}
         <header className="bg-white border-b border-slate-200">
           <div className="max-w-7xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <div className="flex flex-col items-center justify-center flex-shrink-0">
               {CONFIG.company.logoUrl ? (
                 <img 
                   src={CONFIG.company.logoUrl} 
                   alt={CONFIG.company.name} 
-                  className="h-8 md:h-12 w-auto object-contain"
+                  className="h-6 md:h-8 w-auto object-contain"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-emerald-600 rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Activity size={18} className="md:hidden" />
-                  <Activity size={24} className="hidden md:block" />
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-lg mb-1">
+                  <Activity size={14} className="md:hidden" />
+                  <Activity size={18} className="hidden md:block" />
                 </div>
               )}
-              <div className="flex flex-col">
-                <h1 className="font-bold text-sm md:text-xl tracking-tight text-slate-800 leading-none">{CONFIG.company.name}</h1>
-                <p className="text-[8px] md:text-[10px] uppercase tracking-[0.1em] md:tracking-[0.2em] font-semibold text-emerald-600 mt-0.5">{CONFIG.company.subtitle}</p>
+              <div className="flex flex-col items-center mt-1">
+                <h1 className="font-bold text-[10px] md:text-sm tracking-tight text-slate-800 leading-none">{CONFIG.company.name}</h1>
+                <p className="text-[6px] md:text-[8px] uppercase tracking-wider font-semibold text-emerald-600 mt-0.5">{CONFIG.company.subtitle}</p>
               </div>
             </div>
 
@@ -1441,20 +1441,23 @@ export default function App() {
       <footer className="bg-slate-900 text-white py-12 md:py-20 mt-12 md:mt-20">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           <div className="col-span-1 sm:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-col items-start mb-6">
               {CONFIG.company.logoUrl ? (
                 <img 
                   src={CONFIG.company.logoUrl} 
                   alt={CONFIG.company.name} 
-                  className="h-8 md:h-10 w-auto object-contain brightness-0 invert"
+                  className="h-8 md:h-12 w-auto object-contain brightness-0 invert mb-3"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-emerald-600 rounded-lg md:rounded-xl flex items-center justify-center text-white">
-                  <Activity size={20} className="md:size-6" />
+                <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white mb-3">
+                  <Activity size={24} />
                 </div>
               )}
-              <h1 className="font-bold text-lg md:text-xl tracking-tight">{CONFIG.company.name}</h1>
+              <div>
+                <h1 className="font-bold text-lg md:text-xl tracking-tight leading-none">{CONFIG.company.name}</h1>
+                <p className="text-[10px] md:text-xs uppercase tracking-widest text-emerald-400 mt-1">{CONFIG.company.subtitle}</p>
+              </div>
             </div>
             <p className="text-slate-400 max-w-md leading-relaxed text-sm md:text-base">
               Leading distributor and marketer of professional health products. 
