@@ -161,6 +161,9 @@ export default function App() {
 
   useEffect(() => {
     const initApp = async () => {
+      // 0. CHECK VERSION FIRST: Clear cache if version mismatch (e.g. after remix or update)
+      CacheService.checkVersion(CONFIG.defaults.cacheVersion);
+
       // 1. Try to load from cache first for instant UI
       const cachedProducts = CacheService.get(CacheService.KEYS.PRODUCTS);
       const cachedPackages = CacheService.get(CacheService.KEYS.PACKAGES);

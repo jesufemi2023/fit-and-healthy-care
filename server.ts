@@ -248,20 +248,45 @@ export async function createServer() {
     if (!supabase) return res.json({ last_updated: new Date().toISOString() });
     
     try {
-      const { data, error } = await supabase
+      // 1. Get global metadata timestamp
+      const { data: metaData } = await supabase
         .from('app_metadata')
         .select('last_updated')
         .eq('id', 'global_sync')
         .maybeSingle();
       
-      if (error || !data) {
-        // Fallback if table doesn't exist or no record
-        return res.json({ last_updated: new Date(0).toISOString() });
-      }
+      // 2. Get latest updated_at from products
+      const { data: prodData } = await supabase
+        .from('products')
+        .select('updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // 3. Get latest updated_at from packages
+      const { data: packData } = await supabase
+        .from('recommended_packages')
+        .select('updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Collect all timestamps
+      const timestamps = [
+        metaData?.last_updated,
+        prodData?.updated_at,
+        packData?.updated_at
+      ].filter(t => t && !isNaN(Date.parse(t)));
+
+      // Find the most recent one
+      const lastUpdated = timestamps.length > 0 
+        ? new Date(Math.max(...timestamps.map(t => new Date(t).getTime()))).toISOString()
+        : new Date(0).toISOString();
       
-      res.json(data);
+      res.json({ last_updated: lastUpdated });
     } catch (e) {
-      res.json({ last_updated: new Date(0).toISOString() });
+      console.error("Sync Check Error:", e);
+      res.json({ last_updated: new Date().toISOString() }); // Fallback to now to force refresh on error
     }
   });
 

@@ -31,6 +31,7 @@ export const CONFIG = {
   },
   defaults: {
     distributorId: getEnv('VITE_DEFAULT_DISTRIBUTOR_ID', "SD-GHT-MEMBER-001"),
+    cacheVersion: getEnv('VITE_CACHE_VERSION', "1.0.0"),
   },
   heroImages: (() => {
     const images: string[] = [];
