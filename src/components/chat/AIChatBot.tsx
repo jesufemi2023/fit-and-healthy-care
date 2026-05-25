@@ -19,7 +19,7 @@ export const AIChatBot: React.FC<AIChatBotProps> = ({ onProductClick, isOpen, se
     {
       id: 'welcome',
       role: 'ai',
-      content: 'Hello! I am Dr. GHT, your Smart Health Assistant. How can I help you today?'
+      content: 'Hello! I am Dr. David, your Smart Health Assistant. How can I help you today?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -157,7 +157,7 @@ export const AIChatBot: React.FC<AIChatBotProps> = ({ onProductClick, isOpen, se
             
             {/* Tooltip to draw attention */}
             <span className="absolute -top-14 right-0 bg-white text-emerald-700 px-5 py-3 rounded-2xl text-sm md:text-base font-black shadow-2xl whitespace-nowrap border-2 border-emerald-100 animate-bounce">
-              Ask Dr. GHT ✨
+              Ask Dr. David ✨
               <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-b-2 border-r-2 border-emerald-100 transform rotate-45"></div>
             </span>
             
@@ -183,7 +183,7 @@ export const AIChatBot: React.FC<AIChatBotProps> = ({ onProductClick, isOpen, se
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg leading-tight">Instant Health Chat</h3>
-                  <p className="text-emerald-100 text-xs">Dr. GHT • Online 24/7</p>
+                  <p className="text-emerald-100 text-xs">Dr. David • Online 24/7</p>
                 </div>
               </div>
               <button 
