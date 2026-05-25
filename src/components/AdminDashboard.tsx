@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { GoogleGenAI } from "@google/genai";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Plus, 
@@ -284,21 +283,6 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
       return;
     }
 
-    // Restore the original API Key Selection workflow
-    const aistudio = (window as any).aistudio;
-    let hasUserKey = false;
-    if (aistudio) {
-      try {
-        hasUserKey = await aistudio.hasSelectedApiKey();
-        if (!hasUserKey && editForm.product_ids?.length > 0) {
-          // If they haven't selected a key, we can still try with the default one,
-          // but we should warn them if it fails later.
-        }
-      } catch (e) {
-        console.warn("API Key selection error:", e);
-      }
-    }
-
     setLoading(true);
     try {
       // 1. Fetch product image base64 data from server
@@ -321,48 +305,25 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
       const { images } = await res.json();
       if (!images || images.length === 0) throw new Error("No product images found");
 
-      // 2. Call Gemini API on frontend
-      // Use API_KEY (from dialog) or GEMINI_API_KEY (platform default)
-      let apiKey = (typeof process !== 'undefined' ? process.env.API_KEY : undefined) || process.env.GEMINI_API_KEY;
-      if (apiKey === "MY_GEMINI_API_KEY") apiKey = undefined;
-      
-      const ai = new GoogleGenAI(apiKey ? { apiKey } : {});
-      
-      const parts: any[] = [];
-
-      for (const img of images) {
-        parts.push({
-          inlineData: {
-            data: img.base64,
-            mimeType: img.mimeType
-          }
-        });
-      }
-
-      parts.push({ text: `Generate a professional studio photograph of a premium wellness combo package named "${editForm.name || 'Wellness Kit'}". It should look like a cohesive "Master Kit" or "Luxury Collection". The kit contains ${editForm.product_ids.length} products in total. Use the provided product images as visual references for the branding, bottle shapes, and label styles. Arrange them elegantly with soft lighting and emerald green accents.` });
-
-      // Use gemini-3.1-flash-image-preview if user has selected a key, otherwise fallback to 2.5
-      const modelName = hasUserKey ? "gemini-3.1-flash-image-preview" : "gemini-2.5-flash-image";
-
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: { parts },
-        config: {
-          imageConfig: {
-            aspectRatio: "1:1"
-          }
-        }
+      // 2. Call the backend proxy to generate combo image
+      const genRes = await fetch("/api/admin/generate-combo-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": adminPassword
+        },
+        body: JSON.stringify({
+          images,
+          packageName: editForm.name || "Wellness Kit"
+        })
       });
 
-      let imageUrl = "";
-      if (response.candidates?.[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData) {
-            imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-            break;
-          }
-        }
+      if (!genRes.ok) {
+        const err = await genRes.json();
+        throw new Error(err.error || "Failed to generate combo image from AI");
       }
+
+      const { imageUrl } = await genRes.json();
 
       if (imageUrl) {
         setEditForm({ ...editForm, package_image_url: imageUrl });
@@ -371,21 +332,10 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
       }
     } catch (e: any) {
       console.error("Image generation error:", e);
-      const errStr = String(e).toLowerCase();
-      const isQuota = errStr.includes("quota") || errStr.includes("exhausted") || errStr.includes("429");
-      
       // Fallback to high-quality placeholder if AI fails
       const fallbackUrl = `https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=1000&auto=format&fit=crop`;
       setEditForm({ ...editForm, package_image_url: fallbackUrl });
-
-      if (isQuota) {
-        console.warn("AI Quota exceeded, using high-quality fallback image.");
-        // We don't alert here to avoid interrupting the flow, just use the fallback
-      } else if (e.message?.includes("permission") || e.message?.includes("403")) {
-        alert("Permission Denied: Your API key might not have access to this model. Using fallback image.");
-      } else {
-        console.error("Image generation failed, using fallback:", e.message);
-      }
+      console.error("Image generation failed, using fallback:", e.message);
     } finally {
       setLoading(false);
     }

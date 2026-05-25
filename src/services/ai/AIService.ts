@@ -199,6 +199,150 @@ export class AIService {
     }
     return null;
   }
+
+  async generateBlogContent(topic: string, category: string): Promise<{ blogData: any; image_url: string; packageSearchTerm: string }> {
+    // 1. Define Category Rules for Packages
+    let packageSearchTerm = '';
+    let packageProducts: string[] = [];
+    
+    if (category === 'Erectile Dysfunction' || category === 'Premature Ejaculation' || category === 'Men\'s Health') {
+      packageSearchTerm = 'Weak Erection';
+      packageProducts = ['Zinc', 'Reodoe Capsules', 'Vigor Max Softgel'];
+    } else if (category === 'Prostate Health') {
+      packageSearchTerm = 'Prostate';
+      packageProducts = ['Vigor Max', 'B-Clear', 'Prostbeta'];
+    } else if (category === 'Diabetes') {
+      packageSearchTerm = 'Diabetes';
+      packageProducts = ['Constifree Tea', 'Longzit', 'Dialese', 'Myco-Balance'];
+    } else {
+      packageSearchTerm = 'Wellness';
+    }
+
+    const key = await this.keyManager.getNextKey();
+    if (!key) {
+      throw new Error("AI is currently unavailable (All API keys are exhausted). Please try again later.");
+    }
+    const ai = new GoogleGenAI({ apiKey: key });
+
+    // 2. Generate Content with AI
+    const prompt = `
+      Generate a comprehensive, SEO-optimized health blog article for the topic: "${topic}" in the category: "${category}".
+      
+      The article MUST include:
+      1. An SEO-optimized title.
+      2. A detailed introduction educating the visitor about the health issue.
+      3. Educational sections with clear headings and bullet points.
+      4. Health tips.
+      5. A "Real Customer Experience" section using a WhatsApp-style testimonial conversation between a customer and a consultant. Include chat bubbles, contact name, timestamp, and profile picture placeholders. Make it sound realistic and believable.
+      6. A recommendation section for a supplement package. If the category is ${category}, recommend a package containing: ${packageProducts.join(', ')}.
+      7. An FAQ section with at least 3 common questions.
+      8. A conclusion.
+      9. A list of 3 "Related Articles" titles.
+
+      The tone must be educational and trustworthy, not like direct sales content.
+
+      Format the entire response as a JSON object with the following structure:
+      {
+        "title": "...",
+        "meta_description": "...",
+        "content": "Markdown formatted content. For the WhatsApp testimonial, use blockquotes or specific markdown to represent chat bubbles. For the package recommendation, create a visually appealing section in markdown.",
+        "tags": ["${category}", "health", "wellness", "tips"],
+        "image_prompt": "A professional, medical-grade, realistic photo or 3D illustration representing ${topic}. Not cartoonish."
+      }
+    `;
+
+    // Use gemini-3.5-flash since this is a text task
+    const textResponse = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    let blogData: any;
+    try {
+      blogData = JSON.parse(textResponse.text || '{}');
+    } catch (e) {
+      console.error("Failed to parse AI response as JSON.");
+      throw new Error("The AI failed to format the article correctly. Please try again.");
+    }
+
+    // 3. Generate Image with AI
+    let image_url = `https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=800&auto=format&fit=crop`; // High quality medical fallback
+    try {
+      const imageResponse = await ai.models.generateContent({
+        model: "gemini-2.5-flash-image",
+        contents: blogData.image_prompt || `Professional medical photo about ${topic}`,
+        config: {
+          imageConfig: {
+            aspectRatio: "16:9"
+          }
+        }
+      });
+      
+      if (imageResponse.candidates?.[0]?.content?.parts) {
+        for (const part of imageResponse.candidates[0].content.parts) {
+          if (part.inlineData) {
+            image_url = `data:image/png;base64,${part.inlineData.data}`;
+            break;
+          }
+        }
+      }
+    } catch (e: any) {
+      console.error("Failed to generate image, using high-quality fallback:", e);
+      const seeds: Record<string, string> = {
+        'Diabetes': '1584036561566-baf8f5f1b144',
+        'Prostate Health': '1576091160550-2173dba999ef',
+        'Wellness': '1544367567-0f2fcb009e0b'
+      };
+      const photoId = seeds[category] || '1576091160550-2173dba999ef';
+      image_url = `https://images.unsplash.com/photo-${photoId}?q=80&w=800&auto=format&fit=crop`;
+    }
+
+    return { blogData, image_url, packageSearchTerm };
+  }
+
+  async generateComboImage(images: { name: string; base64: string; mimeType: string }[], packageName: string): Promise<string> {
+    const key = await this.keyManager.getNextKey();
+    if (!key) {
+      throw new Error("AI is currently unavailable (All API keys are exhausted). Please try again later.");
+    }
+    const ai = new GoogleGenAI({ apiKey: key });
+
+    const parts: any[] = [];
+
+    for (const img of images) {
+      parts.push({
+        inlineData: {
+          data: img.base64,
+          mimeType: img.mimeType
+        }
+      });
+    }
+
+    parts.push({ text: `Generate a professional studio photograph of a premium wellness combo package named "${packageName || 'Wellness Kit'}". It should look like a cohesive "Master Kit" or "Luxury Collection". The kit contains ${images.length} products in total. Use the provided product images as visual references for the branding, bottle shapes, and label styles. Arrange them elegantly with soft lighting and emerald green accents.` });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: { parts },
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1"
+        }
+      }
+    });
+
+    if (response.candidates?.[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        }
+      }
+    }
+
+    throw new Error("Failed to generate image from AI");
+  }
 }
 
 // Export a lazy getter for the singleton instance

@@ -437,6 +437,36 @@ export async function createServer() {
     }
   });
 
+  // Specific route to generate blog content securely on server-side (MUST be before generic /api/admin/:table)
+  app.post("/api/admin/generate-blog-content", adminAuth, async (req, res) => {
+    const { topic, category } = req.body;
+    if (!topic || !category) {
+      return res.status(400).json({ error: "topic and category are required" });
+    }
+    try {
+      const data = await getAIService().generateBlogContent(topic, category);
+      res.json(data);
+    } catch (e: any) {
+      console.error("Generate blog content error:", e);
+      res.status(500).json({ error: e.message || "Failed to generate blog content" });
+    }
+  });
+
+  // Specific route to generate combo package image securely on server-side (MUST be before generic /api/admin/:table)
+  app.post("/api/admin/generate-combo-image", adminAuth, async (req, res) => {
+    const { images, packageName } = req.body;
+    if (!images || !Array.isArray(images)) {
+      return res.status(400).json({ error: "images array is required" });
+    }
+    try {
+      const imageUrl = await getAIService().generateComboImage(images, packageName);
+      res.json({ imageUrl });
+    } catch (e: any) {
+      console.error("Generate combo image error:", e);
+      res.status(500).json({ error: e.message || "Failed to generate combo image" });
+    }
+  });
+
 
 
   // Specific route for AI Blog Generation (MUST be before generic /api/admin/:table)
