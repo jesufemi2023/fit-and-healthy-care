@@ -2,8 +2,8 @@
  * Utility for Cloudinary image transformations to optimize performance and bandwidth.
  */
 
-export const getOptimizedImageUrl = (url: string, width: number = 800): string => {
-  if (!url) return "";
+export const getOptimizedImageUrl = (url: string | null | undefined, width: number = 800): string | null => {
+  if (!url) return null;
 
   // If it's already a Cloudinary URL, inject transformations
   if (url.includes("cloudinary.com")) {

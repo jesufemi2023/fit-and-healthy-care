@@ -78,7 +78,7 @@ export const PackageQuickView: React.FC<PackageQuickViewProps> = ({
                 <div className="p-8 md:p-12 flex items-center justify-center relative overflow-hidden shrink-0">
                   <div className="relative w-full h-full flex items-center justify-center">
                     <img 
-                      src={data.package_image_url || (data.products?.[0]?.image_url)} 
+                      src={(data.package_image_url || data.products?.[0]?.image_url) || null} 
                       alt={data.name} 
                       className="w-full max-h-[400px] object-contain mix-blend-multiply drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]" 
                       referrerPolicy="no-referrer"
@@ -101,7 +101,7 @@ export const PackageQuickView: React.FC<PackageQuickViewProps> = ({
                       >
                         <div className="w-14 h-14 bg-slate-50 rounded-lg border border-slate-100 p-1 flex items-center justify-center shrink-0">
                           <img 
-                            src={product.image_url} 
+                            src={product.image_url || null} 
                             alt={product.name} 
                             className="w-full h-full object-contain mix-blend-multiply"
                             referrerPolicy="no-referrer"

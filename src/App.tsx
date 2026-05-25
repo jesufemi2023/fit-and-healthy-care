@@ -957,7 +957,7 @@ export default function App() {
                     onMouseLeave={() => setIsZoomed(false)}
                   >
                     <img 
-                      src={viewingProduct.image_url} 
+                      src={viewingProduct.image_url || null} 
                       alt={viewingProduct.name}
                       className={`w-full h-full object-contain mix-blend-multiply transition-transform duration-200 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
                       style={isZoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
@@ -977,7 +977,7 @@ export default function App() {
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="aspect-square bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
                         <img 
-                          src={viewingProduct.image_url} 
+                          src={viewingProduct.image_url || null} 
                           alt="Thumbnail" 
                           className="w-full h-full object-contain mix-blend-multiply"
                           referrerPolicy="no-referrer"
@@ -1534,7 +1534,7 @@ export default function App() {
               {/* Modal Image Section */}
               <div className="w-full lg:w-1/2 bg-slate-50 flex items-center justify-center p-6 lg:p-12 border-b lg:border-b-0 lg:border-r border-slate-100 h-[55vh] lg:h-auto shrink-0 overflow-y-auto custom-scrollbar">
                 <img 
-                  src={selectedProduct.image_url} 
+                  src={selectedProduct.image_url || null} 
                   alt={selectedProduct.name}
                   className="w-full h-full object-contain mix-blend-multiply scale-150 md:scale-175 lg:scale-110"
                   referrerPolicy="no-referrer"
