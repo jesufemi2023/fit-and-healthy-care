@@ -29,7 +29,8 @@ import {
   ChevronRight,
   Link as LinkIcon,
   Check,
-  Settings
+  Settings,
+  Loader2
 } from "lucide-react";
 import OrdersAdminView from "./OrdersAdminView";
 import ConsultationsAdminView from "./ConsultationsAdminView";
@@ -65,6 +66,60 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const [systemHealth, setSystemHealth] = useState<any>({
+    supabase: "Loading...",
+    gemini: "Loading...",
+    cloudinary: "Loading...",
+    email: "Loading...",
+    emailConfig: null,
+    telegramConfig: null
+  });
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<string | null>(null);
+
+  const fetchSystemHealth = async () => {
+    try {
+      const res = await fetch("/api/health");
+      if (res.ok) {
+        const hData = await res.json();
+        setSystemHealth({
+          supabase: hData.supabase ? "Operational" : "Offline",
+          gemini: hData.supabase ? "Active" : "Active",
+          cloudinary: "Operational",
+          email: hData.email_service?.configured ? "Operational" : "Offline (Config Missing)",
+          emailConfig: hData.email_service,
+          telegramConfig: hData.telegram_service
+        });
+      }
+    } catch (e) {
+      console.error("Error fetching system health:", e);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    setTestEmailResult(null);
+    try {
+      const res = await fetch("/api/admin/test-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": adminPassword
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTestEmailResult(`Success! Test email sent successfully to ${data.to}. Please check your Gmail box.`);
+      } else {
+        setTestEmailResult(`Failed: ${data.error || "Unknown error"}`);
+      }
+    } catch (e: any) {
+      setTestEmailResult(`Error: ${e.message || "Connection failure"}`);
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
   const copyBlogLink = (slug: string, id: string) => {
     const url = `${window.location.origin}/?blog=${slug || id}`;
     navigator.clipboard.writeText(url);
@@ -84,8 +139,13 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
   ];
 
   useEffect(() => {
+    fetchSystemHealth();
+  }, []);
+
+  useEffect(() => {
     if (activeTable === "overview") {
       fetchOverviewStats();
+      fetchSystemHealth();
     } else {
       fetchData();
     }
@@ -758,13 +818,55 @@ export default function AdminDashboard({ adminPassword, onLogout }: AdminDashboa
                           </div>
                           
                           <div className="space-y-5">
-                            <HealthRow label="Supabase Database" status="Operational" />
-                            <HealthRow label="Gemini AI Engine" status="Active" />
-                            <HealthRow label="Cloudinary Storage" status="Operational" />
-                            <HealthRow label="Email Service" status="Operational" />
+                            <HealthRow label="Supabase Database" status={systemHealth.supabase} />
+                            <HealthRow label="Gemini AI Engine" status={systemHealth.gemini} />
+                            <HealthRow label="Cloudinary Storage" status={systemHealth.cloudinary} />
+                            <HealthRow label="Email Service" status={systemHealth.email} />
                           </div>
 
-                          <div className="mt-10 pt-8 border-t border-white/10">
+                          {systemHealth.emailConfig && (
+                            <div className="mt-6 pt-4 border-t border-white/10 space-y-3 font-sans">
+                              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Email Diagnostics</p>
+                              <div className="text-xs bg-white/5 p-4 rounded-2xl space-y-2 border border-white/10">
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-white/60 font-semibold">GMAIL_USER:</span>
+                                  <span className="font-mono text-emerald-400 font-bold truncate max-w-[150px]">
+                                    {systemHealth.emailConfig.user || "Not Configured"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-white/60 font-semibold">SEND_TO:</span>
+                                  <span className="font-mono text-emerald-400 font-bold truncate max-w-[150px]">
+                                    {systemHealth.emailConfig.recipient || "Same as user"}
+                                  </span>
+                                </div>
+                                
+                                <button
+                                  onClick={handleTestEmail}
+                                  disabled={testingEmail || !systemHealth.emailConfig.configured}
+                                  type="button"
+                                  className="w-full mt-2 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                                >
+                                  {testingEmail ? (
+                                    <>
+                                      <Loader2 size={12} className="animate-spin" />
+                                      Sending Test...
+                                    </>
+                                  ) : (
+                                    "Send Test Email"
+                                  )}
+                                </button>
+                                
+                                {testEmailResult && (
+                                  <p className={`text-[10px] p-2 rounded-lg leading-relaxed ${testEmailResult.startsWith("Success") ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
+                                    {testEmailResult}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-8 pt-6 border-t border-white/10">
                             <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4">Quick Actions</p>
                             <div className="grid grid-cols-2 gap-3">
                               <QuickAction icon={Download} label="Export Data" />

@@ -195,6 +195,7 @@ export async function createServer() {
 
   // --- Health Check ---
   app.get("/api/health", async (req, res) => {
+    const clean = (val: string | undefined) => val ? val.replace(/^["']|["']$/g, '').trim() : null;
     const status: any = {
       status: "ok",
       supabase: !!supabase,
@@ -205,6 +206,17 @@ export async function createServer() {
         SUPABASE_URL: !!process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
         SERVICE_ROLE_KEY: !!process.env.SERVICE_ROLE_KEY,
+      },
+      email_service: {
+        configured: !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+        user: clean(process.env.GMAIL_USER),
+        has_password: !!process.env.GMAIL_APP_PASSWORD,
+        recipient: clean(process.env.NOTIFICATION_EMAIL_TO || process.env.GMAIL_USER)
+      },
+      telegram_service: {
+        configured: !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+        chat_id: clean(process.env.TELEGRAM_CHAT_ID),
+        has_token: !!process.env.TELEGRAM_BOT_TOKEN
       }
     };
 
@@ -464,6 +476,17 @@ export async function createServer() {
     } catch (e: any) {
       console.error("Generate combo image error:", e);
       res.status(500).json({ error: e.message || "Failed to generate combo image" });
+    }
+  });
+
+  // Specific route to run email diagnostic test (MUST be before generic /api/admin/:table)
+  app.post("/api/admin/test-email", adminAuth, async (req, res) => {
+    try {
+      const result = await NotificationService.sendTestEmail();
+      res.json(result);
+    } catch (e: any) {
+      console.error("Test email connection error:", e);
+      res.status(500).json({ error: e.message || "Failed to send diagnostic test email" });
     }
   });
 
