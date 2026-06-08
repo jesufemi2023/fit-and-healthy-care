@@ -141,7 +141,17 @@ export default function App() {
   const [accessToken] = useState(() => {
     const existing = localStorage.getItem("ght_access_token");
     if (existing) return existing;
-    const newToken = crypto.randomUUID();
+    let newToken: string;
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      newToken = crypto.randomUUID();
+    } else {
+      // Robust standard-compliant fallback for UUID v4
+      newToken = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    }
     localStorage.setItem("ght_access_token", newToken);
     return newToken;
   });

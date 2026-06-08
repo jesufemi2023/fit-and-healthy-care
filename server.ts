@@ -7,7 +7,8 @@ import { getAIService } from "./src/services/ai/AIService.js";
 import { getCloudinaryService } from "./src/services/cloudinary/CloudinaryService.js";
 import { CONFIG } from "./src/config.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = typeof import.meta !== "undefined" && import.meta.url ? fileURLToPath(import.meta.url) : "";
+const __dirname = __filename ? path.dirname(__filename) : process.cwd();
 
 function slugify(text: string) {
   if (!text) return "";
