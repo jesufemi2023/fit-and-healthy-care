@@ -821,7 +821,10 @@ export default function App() {
                     <ProductCard 
                       key={product.id}
                       product={product}
-                      onQuickView={setSelectedProduct}
+                      onQuickView={(p) => {
+                        setViewingProduct(p);
+                        navigateTo("product-detail");
+                      }}
                       onOrder={(p) => openOrderDrawer(p, 'product')}
                     />
                   ))}

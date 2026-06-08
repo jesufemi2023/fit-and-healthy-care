@@ -80,7 +80,7 @@ export const CONFIG = {
     {id: "testimonials", label: "Testimonials"},
     {id: "blog", label: "Health Tips"},
     {id: "consultation", label: "Free Consultation"},
-    {id: "history", label: "My Orders"},
+    {id: "history", label: "View Order Status"},
     {id: "admin", label: "Admin"},
   ],
 };
