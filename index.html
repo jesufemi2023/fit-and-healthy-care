@@ -7,16 +7,28 @@
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/drizgfofw/image/upload/v1771685247/ght-logo_dcsmck.png" />
     <!-- Meta Pixel Code -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1333083775450672');
-      fbq('track', 'PageView');
+      (function() {
+        var hostname = window.location.hostname;
+        var isDevOrPreview = hostname === 'localhost' || 
+                             hostname === '127.0.0.1' || 
+                             hostname.indexOf('run.app') !== -1 || 
+                             hostname.indexOf('.local') !== -1;
+        
+        if (!isDevOrPreview) {
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '1333083775450672');
+          fbq('track', 'PageView');
+        } else {
+          console.log('[Meta Pixel] Bypassed Pixel loading in development/preview environments (' + hostname + ')');
+        }
+      })();
     </script>
     <!-- End Meta Pixel Code -->
   </head>

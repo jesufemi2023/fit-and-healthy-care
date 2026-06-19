@@ -7,7 +7,7 @@ import { getAIService } from "./src/services/ai/AIService.js";
 import { getCloudinaryService } from "./src/services/cloudinary/CloudinaryService.js";
 import { CONFIG } from "./src/config.js";
 
-const __filename = typeof import.meta !== "undefined" && import.meta.url ? fileURLToPath(import.meta.url) : "";
+const __filename = typeof import.meta !== "undefined" && (import.meta as any).url ? fileURLToPath((import.meta as any).url) : "";
 const __dirname = __filename ? path.dirname(__filename) : process.cwd();
 
 function slugify(text: string) {
@@ -1099,7 +1099,22 @@ export async function createServer() {
 
 // Start the server only if run directly (not imported as a module)
 const PORT = 3000;
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+
+const isMain = () => {
+  if (!process.argv[1]) return false;
+  const mainPath = path.resolve(process.argv[1]);
+  if (typeof __filename !== "undefined" && __filename) {
+    return mainPath === path.resolve(__filename);
+  }
+  if (typeof import.meta !== "undefined" && (import.meta as any).url) {
+    try {
+      return mainPath === fileURLToPath((import.meta as any).url);
+    } catch (_) {}
+  }
+  return false;
+};
+
+if (isMain()) {
   createServer().then(app => {
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
