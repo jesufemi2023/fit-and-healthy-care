@@ -280,12 +280,12 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
-    // Deep Linking Logic: Check for buy_product, buy_package, product, package, or blog in URL
+    // Deep Linking Logic: Check for buy_product, buy_package, buy_combo, product, package, combo, or blog in URL
     const handleDeepLinking = () => {
       if (loading) return;
 
       const params = new URLSearchParams(window.location.search);
-      const keys = ['buy_product', 'buy_package', 'product', 'package', 'blog'];
+      const keys = ['buy_product', 'buy_package', 'buy_combo', 'product', 'package', 'combo', 'blog'];
       const presentKeys = keys.filter(k => params.has(k));
       
       if (presentKeys.length === 0) return;
@@ -297,7 +297,7 @@ export default function App() {
         setActiveTab("blog-post");
       }
 
-      // 2. Handle Products/Packages (Needs Data)
+      // 2. Handle Products/Packages/Combos (Needs Data)
       const hasProductParams = presentKeys.some(k => k !== 'blog');
       const dataReady = products.length > 0 || recommendedPackages.length > 0;
 
@@ -307,9 +307,9 @@ export default function App() {
 
       if (dataReady) {
         const buyProductId = params.get('buy_product');
-        const buyPackageId = params.get('buy_package');
+        const buyPackageId = params.get('buy_package') || params.get('buy_combo');
         const productId = params.get('product');
-        const packageId = params.get('package');
+        const packageId = params.get('package') || params.get('combo');
 
         if (buyProductId) {
           const product = products.find(p => p.id === buyProductId || p.product_code === buyProductId);
