@@ -311,23 +311,53 @@ export default function App() {
         const productId = params.get('product');
         const packageId = params.get('package') || params.get('combo');
 
+        const slugify = (text: string) => {
+          if (!text) return "";
+          return text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+        };
+
+        const findProduct = (val: string) => {
+          if (!val) return null;
+          const q = val.toLowerCase().trim();
+          return products.find(p => 
+            p.id?.toLowerCase() === q || 
+            p.product_code?.toLowerCase() === q ||
+            p.name?.toLowerCase() === q ||
+            slugify(p.name) === q ||
+            slugify(p.product_code || '') === q
+          );
+        };
+
+        const findPackage = (val: string) => {
+          if (!val) return null;
+          const q = val.toLowerCase().trim();
+          const allPkgs = [...recommendedPackages, ...comboPackages];
+          return allPkgs.find(p => 
+            p.id?.toLowerCase() === q || 
+            p.package_code?.toLowerCase() === q ||
+            p.name?.toLowerCase() === q ||
+            slugify(p.name) === q ||
+            slugify(p.package_code || '') === q
+          );
+        };
+
         if (buyProductId) {
-          const product = products.find(p => p.id === buyProductId || p.product_code === buyProductId);
+          const product = findProduct(buyProductId);
           if (product) openOrderDrawer(product, 'product');
         }
         if (buyPackageId) {
-          const pkg = [...recommendedPackages, ...comboPackages].find(p => p.id === buyPackageId || p.package_code === buyPackageId);
+          const pkg = findPackage(buyPackageId);
           if (pkg) openOrderDrawer(pkg, 'package');
         }
         if (productId) {
-          const product = products.find(p => p.id === productId || p.product_code === productId);
+          const product = findProduct(productId);
           if (product) {
             setViewingProduct(product);
             setActiveTab("product-detail");
           }
         }
         if (packageId) {
-          const pkg = [...recommendedPackages, ...comboPackages].find(p => p.id === packageId || p.package_code === packageId);
+          const pkg = findPackage(packageId);
           if (pkg) setSelectedPackage(pkg);
         }
       }
