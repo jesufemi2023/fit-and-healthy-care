@@ -30,12 +30,12 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({
     setZoomPos({ x, y });
   };
 
-  return (
+    return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8 pb-20 max-w-7xl mx-auto px-4 md:px-8 pt-8"
+      className="space-y-8 pb-32 max-w-7xl mx-auto px-4 md:px-8 pt-8"
     >
       {/* Back Button */}
       <button 
@@ -201,6 +201,44 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Fixed Sticky Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl py-4 px-6 md:px-12 flex items-center justify-between">
+        <div className="hidden md:flex items-center gap-4">
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center p-2 border border-emerald-100">
+            <img src={(data.package_image_url || data.products?.[0]?.image_url) || null} alt={data.name} className="w-full h-full object-contain mix-blend-multiply" referrerPolicy="no-referrer" />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900 truncate max-w-xs">{data.name}</h4>
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 font-black text-base">₦{discountedPrice.toLocaleString()}</span>
+              {data.discount > 0 && (
+                <span className="text-xs text-slate-400 line-through font-bold">₦{data.price.toLocaleString()}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <button 
+            onClick={() => {
+              const message = `Hello SD GHT Health Care, I am interested in ${data.name}. Could you please provide more information on how I can place an order?`;
+              window.open(`https://wa.me/${CONFIG.company.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+            }}
+            className="flex-1 md:flex-initial bg-white border-2 border-slate-200 text-slate-900 px-6 py-3.5 rounded-2xl font-black text-base hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+          >
+            <Phone size={20} className="text-emerald-600" />
+            <span>Chat with us</span>
+          </button>
+          <button 
+            onClick={() => onOrder(quantity)}
+            className="flex-1 md:flex-initial bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-black text-base hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <ShoppingBag size={20} />
+            <span>Order Now</span>
+          </button>
         </div>
       </div>
     </motion.div>

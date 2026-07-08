@@ -361,32 +361,29 @@ export default function App() {
           );
         };
 
-        if (buyProductId) {
-          const product = findProduct(buyProductId);
-          if (product) {
-            setOrderItem({ item: product, type: 'product', qty: 1 });
-            setActiveTab("order-checkout");
-          }
-        }
-        if (buyPackageId) {
-          const pkg = findPackage(buyPackageId);
-          if (pkg) {
-            setOrderItem({ item: pkg, type: 'package', qty: 1 });
-            setActiveTab("order-checkout");
-          }
-        }
-        if (productId) {
-          const product = findProduct(productId);
+        if (buyProductId || productId) {
+          const targetVal = buyProductId || productId;
+          const product = findProduct(targetVal);
           if (product) {
             setViewingProduct(product);
             setActiveTab("product-detail");
+          } else if (products.length > 0) {
+            setViewingProduct(products[0]);
+            setActiveTab("product-detail");
           }
         }
-        if (packageId) {
-          const pkg = findPackage(packageId);
+        if (buyPackageId || packageId) {
+          const targetVal = buyPackageId || packageId;
+          const pkg = findPackage(targetVal);
           if (pkg) {
             setViewingPackage(pkg);
             setActiveTab("package-detail");
+          } else {
+            const allPkgs = [...recommendedPackages, ...comboPackages];
+            if (allPkgs.length > 0) {
+              setViewingPackage(allPkgs[0]);
+              setActiveTab("package-detail");
+            }
           }
         }
 
@@ -1024,7 +1021,7 @@ export default function App() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-8 pb-20"
+              className="space-y-8 pb-32"
             >
               {/* Breadcrumbs / Back Button */}
               <button 
@@ -1250,6 +1247,44 @@ export default function App() {
                       Free Consultation
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Fixed Sticky Bottom Action Bar */}
+              <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl py-4 px-6 md:px-12 flex items-center justify-between">
+                <div className="hidden md:flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center p-2 border border-emerald-100">
+                    <img src={viewingProduct.image_url || null} alt={viewingProduct.name} className="w-full h-full object-contain mix-blend-multiply" referrerPolicy="no-referrer" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-900 truncate max-w-xs">{viewingProduct.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-600 font-black text-base">₦{(viewingProduct.price_naira * (1 - viewingProduct.discount_percent / 100)).toLocaleString()}</span>
+                      {viewingProduct.discount_percent > 0 && (
+                        <span className="text-xs text-slate-400 line-through font-bold">₦{viewingProduct.price_naira.toLocaleString()}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                  <button 
+                    onClick={() => {
+                      const message = `Hello SD GHT Health Care, I am interested in ${viewingProduct.name}. Could you please provide more information on how I can place an order?`;
+                      window.open(`https://wa.me/${CONFIG.company.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+                    }}
+                    className="flex-1 md:flex-initial bg-white border-2 border-slate-200 text-slate-900 px-6 py-3.5 rounded-2xl font-black text-base hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <Phone size={20} className="text-emerald-600" />
+                    <span>Chat with us</span>
+                  </button>
+                  <button 
+                    onClick={() => openOrderDrawer(viewingProduct, 'product', detailQuantity)}
+                    className="flex-1 md:flex-initial bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-black text-base hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag size={20} />
+                    <span>Order Now</span>
+                  </button>
                 </div>
               </div>
             </motion.div>
