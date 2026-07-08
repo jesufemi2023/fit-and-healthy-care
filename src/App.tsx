@@ -43,6 +43,8 @@ import { OrderDrawer } from "./components/OrderDrawer";
 import { BlogList } from "./components/blog/BlogList";
 import { BlogPost } from "./components/blog/BlogPost";
 import { PackageQuickView } from "./components/PackageQuickView";
+import { PackageDetailPage } from "./components/PackageDetailPage";
+import { OrderCheckoutPage } from "./components/OrderCheckoutPage";
 import { AIChatBot } from "./components/chat/AIChatBot";
 import { SearchResults } from "./components/SearchResults";
 import AdminDashboard from "./components/AdminDashboard";
@@ -62,7 +64,7 @@ interface Consultation {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"home" | "about" | "products" | "recommended" | "combo" | "consultation" | "history" | "product-detail" | "admin" | "blog" | "blog-post" | "search" | "testimonials">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "about" | "products" | "recommended" | "combo" | "consultation" | "history" | "product-detail" | "package-detail" | "order-checkout" | "admin" | "blog" | "blog-post" | "search" | "testimonials">("home");
   const [previousTab, setPreviousTab] = useState<typeof activeTab>("home");
 
   const navigateTo = (tab: typeof activeTab) => {
@@ -101,10 +103,12 @@ export default function App() {
 
   const openOrderDrawer = (item: any, type: 'package' | 'product', qty: number = 1) => {
     setOrderItem({ item, type, qty });
-    setIsOrderDrawerOpen(true);
-    setSelectedProduct(null); // Close quick view modal if open
+    setActiveTab("order-checkout");
+    setSelectedProduct(null);
+    setSelectedPackage(null);
   };
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [viewingPackage, setViewingPackage] = useState<PackageData | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -343,11 +347,17 @@ export default function App() {
 
         if (buyProductId) {
           const product = findProduct(buyProductId);
-          if (product) openOrderDrawer(product, 'product');
+          if (product) {
+            setOrderItem({ item: product, type: 'product', qty: 1 });
+            setActiveTab("order-checkout");
+          }
         }
         if (buyPackageId) {
           const pkg = findPackage(buyPackageId);
-          if (pkg) openOrderDrawer(pkg, 'package');
+          if (pkg) {
+            setOrderItem({ item: pkg, type: 'package', qty: 1 });
+            setActiveTab("order-checkout");
+          }
         }
         if (productId) {
           const product = findProduct(productId);
@@ -358,7 +368,10 @@ export default function App() {
         }
         if (packageId) {
           const pkg = findPackage(packageId);
-          if (pkg) setSelectedPackage(pkg);
+          if (pkg) {
+            setViewingPackage(pkg);
+            setActiveTab("package-detail");
+          }
         }
       }
 
@@ -1208,6 +1221,35 @@ export default function App() {
                 </div>
               </div>
             </motion.div>
+          )}
+
+          {activeTab === "package-detail" && viewingPackage && (
+            <PackageDetailPage 
+              data={viewingPackage}
+              onBack={() => navigateTo(previousTab === "package-detail" ? "recommended" : previousTab)}
+              onOrder={(qty) => {
+                setOrderItem({ item: viewingPackage, type: 'package', qty });
+                setActiveTab("order-checkout");
+              }}
+              onViewProduct={(product) => {
+                setViewingProduct(product);
+                navigateTo("product-detail");
+              }}
+            />
+          )}
+
+          {activeTab === "order-checkout" && orderItem && (
+            <OrderCheckoutPage 
+              item={orderItem.item}
+              type={orderItem.type}
+              distributorId={distributorId}
+              initialQuantity={orderItem.qty}
+              onBack={() => navigateTo(previousTab === "order-checkout" ? "home" : previousTab)}
+              onShopMore={() => {
+                setActiveTab('products');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
           )}
 
           {activeTab === "blog" && (
