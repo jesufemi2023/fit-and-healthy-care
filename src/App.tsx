@@ -90,6 +90,17 @@ export default function App() {
   const [distributorId, setDistributorId] = useState(CONFIG.defaults.distributorId);
   const [detailQuantity, setDetailQuantity] = useState(1);
   const [quickViewQuantity, setQuickViewQuantity] = useState(1);
+  const [isDeepLinking, setIsDeepLinking] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return ['buy_product', 'buy_package', 'buy_combo', 'product', 'package', 'combo', 'blog'].some(k => params.has(k));
+  });
+
+  useEffect(() => {
+    if (isDeepLinking) {
+      const timer = setTimeout(() => setIsDeepLinking(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isDeepLinking]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -286,19 +297,24 @@ export default function App() {
   useEffect(() => {
     // Deep Linking Logic: Check for buy_product, buy_package, buy_combo, product, package, combo, or blog in URL
     const handleDeepLinking = () => {
-      if (loading) return;
-
       const params = new URLSearchParams(window.location.search);
       const keys = ['buy_product', 'buy_package', 'buy_combo', 'product', 'package', 'combo', 'blog'];
       const presentKeys = keys.filter(k => params.has(k));
       
-      if (presentKeys.length === 0) return;
+      if (presentKeys.length === 0) {
+        setIsDeepLinking(false);
+        return;
+      }
 
       // 1. Handle Blog (Immediate)
       const blogId = params.get('blog');
       if (blogId !== null && blogId) {
         setSelectedBlogId(blogId);
         setActiveTab("blog-post");
+        setIsDeepLinking(false);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+        return;
       }
 
       // 2. Handle Products/Packages/Combos (Needs Data)
@@ -373,6 +389,8 @@ export default function App() {
             setActiveTab("package-detail");
           }
         }
+
+        setIsDeepLinking(false);
       }
 
       // 3. Clear URL parameters to prevent "sticky" state
@@ -487,6 +505,20 @@ export default function App() {
     trackWhatsAppClick(location);
     window.open(`https://wa.me/${CONFIG.whatsapp.number.replace(/\D/g, '')}?text=${encodeURIComponent(CONFIG.whatsapp.defaultMessage)}`, '_blank');
   };
+
+  if (isDeepLinking) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center shadow-xl animate-pulse">
+          <Leaf size={40} className="text-emerald-600 animate-spin" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-slate-900">Loading Requested Item...</h2>
+          <p className="text-slate-500 font-medium max-w-md">Please wait while we load your product or package details.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
